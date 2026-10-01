@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">₹</div>
+            <div>
+                <h2>Expense<span>Track</span></h2>
+                <small>Finance Manager</small>
+            </div>
+        </div>
+
+        <nav>
+            <button class="nav-item active" onclick="showSection('dashboard')">
+                📊 Dashboard
+            </button>
+
+            <button class="nav-item" onclick="showSection('transactions')">
+                💳 Transactions
+            </button>
+
+            <button class="nav-item" onclick="showSection('budget')">
+                🎯 Budget
+            </button>
+
+            <button class="nav-item" onclick="showSection('accounts')">
+                🏦 Accounts
+            </button>
+
+            <button class="nav-item" onclick="showSection('reports')">
+                📈 Reports
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button onclick="toggleTheme()">🌙 Toggle Theme</button>
+            <button onclick="exportCSV()">📥 Export CSV</button>
+            <button onclick="resetData()">⚠ Reset Data</button>
+        </div>
+    </aside>
+
+
+    <!-- Main -->
+    <main class="main">
+
+        <!-- Header -->
+        <header class="header">
+            <div>
+                <h1 id="pageTitle">Dashboard</h1>
+                <p>Manage your finances smartly and efficiently.</p>
+            </div>
+
+            <button class="add-btn" onclick="openTransactionModal()">
+                + Add Transaction
+            </button>
+        </header>
+
+
+        <!-- DASHBOARD -->
+        <section id="dashboard" class="section active-section">
+
+            <!-- Summary Cards -->
+            <div class="summary-grid">
+
+                <div class="summary-card income">
+                    <div>
+                        <p>Total Income</p>
+                        <h2 id="totalIncome">₹0</h2>
+                    </div>
+                    <div class="card-icon">💰</div>
+                </div>
+
+                <div class="summary-card expense">
+                    <div>
+                        <p>Total Expenses</p>
+                        <h2 id="totalExpense">₹0</h2>
+                    </div>
+                    <div class="card-icon">💸</div>
+                </div>
+
+                <div class="summary-card balance">
+                    <div>
+                        <p>Balance</p>
+                        <h2 id="balance">₹0</h2>
+                    </div>
+                    <div class="card-icon">💳</div>
+                </div>
+
+                <div class="summary-card saving">
+                    <div>
+                        <p>Savings Rate</p>
+                        <h2 id="savingRate">0%</h2>
+                    </div>
+                    <div class="card-icon">🎯</div>
+                </div>
+
+            </div>
+
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+
+                <div class="panel chart-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Expense by Category</h3>
+                            <p>Where your money goes</p>
+                        </div>
+                    </div>
+
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Budget Overview</h3>
+                            <p>Monthly spending</p>
+                        </div>
+                    </div>
+
+                    <div class="budget-box">
+
+                        <div class="budget-top">
+                            <span>Monthly Budget</span>
+                            <strong id="budgetAmount">₹0</strong>
+                        </div>
+
+                        <div class="progress">
+                            <div id="budgetProgress"></div>
+                        </div>
+
+                        <div class="budget-info">
+                            <span id="budgetSpent">Spent: ₹0</span>
+                            <span id="budgetRemaining">Remaining: ₹0</span>
+                        </div>
+
+                    </div>
+
+                    <button class="secondary-btn" onclick="showSection('budget')">
+                        Manage Budget
+                    </button>
+                </div>
+
+            </div>
+
+
+            <!-- Recent Transactions -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h3>Recent Transactions</h3>
+                        <p>Your latest financial activities</p>
+                    </div>
+
+                    <button class="text-btn" onclick="showSection('transactions')">
+                        View All
+                    </button>
+                </div>
+
+                <div id="recentTransactions"></div>
+            </div>
+
+        </section>
+
+
+        <!-- TRANSACTIONS -->
+        <section id="transactions" class="section">
+
+            <div class="panel">
+
+                <div class="filter-bar">
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="🔍 Search transactions..."
+                        oninput="renderTransactions()"
+                    >
+
+                    <select id="typeFilter" onchange="renderTransactions()">
+                        <option value="all">All Types</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+
+                    <select id="categoryFilter" onchange="renderTransactions()">
+                        <option value="all">All Categories</option>
+                    </select>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Account</th>
+                            <th>Type</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="transactionTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- BUDGET -->
+        <section id="budget" class="section">
+
+            <div class="budget-layout">
+
+                <div class="panel">
+
+                    <h3>Monthly Budget</h3>
+                    <p>Set your spending limit for the month.</p>
+
+                    <div class="form-group">
+                        <label>Budget Amount</label>
+
+                        <input
+                            type="number"
+                            id="budgetInput"
+                            placeholder="Enter budget"
+                        >
+                    </div>
+
+                    <button class="add-btn" onclick="saveBudget()">
+                        Save Budget
+                    </button>
+
+                </div>
+
+
+                <div class="panel">
+
+                    <h3>Budget Status</h3>
+
+                    <div class="big-number" id="budgetStatus">
+                        ₹0
+                    </div>
+
+                    <div class="progress large">
+                        <div id="budgetProgress2"></div>
+                    </div>
+
+                    <div class="budget-info">
+                        <span id="budgetSpent2">Spent: ₹0</span>
+                        <span id="budgetRemaining2">Remaining: ₹0</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ACCOUNTS -->
+        <section id="accounts" class="section">
+
+            <div class="panel">
+
+                <div class="panel-header">
+                    <div>
+                        <h3>Accounts</h3>
+                        <p>Track money across multiple accounts.</p>
+                    </div>
+
+                    <button class="add-btn" onclick="addAccount()">
+                        + Add Account
+                    </button>
+                </div>
+
+                <div id="accountsList" class="accounts-grid"></div>
+
+            </div>
+
+        </section>
+
+
+        <!-- REPORTS -->
+        <section id="reports" class="section">
+
+            <div class="panel">
+
+                <div class="panel-header">
+                    <div>
+                        <h3>Financial Reports</h3>
+                        <p>Analyze your financial activity.</p>
+                    </div>
+                </div>
+
+                <div class="chart-container large-chart">
+                    <canvas id="monthlyChart"></canvas>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- Transaction Modal -->
+
+<div id="transactionModal" class="modal">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+            <h2 id="modalTitle">Add Transaction</h2>
+
+            <button class="close-btn" onclick="closeTransactionModal()">
+                ×
+            </button>
+        </div>
+
+
+        <form id="transactionForm">
+
+            <input type="hidden" id="transactionId">
+
+            <div class="form-group">
+
+                <label>Transaction Type</label>
+
+                <select id="transactionType" required>
+
+                    <option value="expense">
+                        Expense
+                    </option>
+
+                    <option value="income">
+                        Income
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>Description</label>
+
+                <input
+                    type="text"
+                    id="description"
+                    placeholder="e.g. Grocery shopping"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Amount</label>
+
+                    <input
+                        type="number"
+                        id="amount"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Date</label>
+
+                    <input
+                        type="date"
+                        id="date"
+                        required
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="form-row">
+
+                <div class="form-group">
+
+                    <label>Category</label>
+
+                    <select id="category" required>
+
+                        <option>Food</option>
+                        <option>Transport</option>
+                        <option>Shopping</option>
+                        <option>Bills</option>
+                        <option>Entertainment</option>
+                        <option>Health</option>
+                        <option>Education</option>
+                        <option>Salary</option>
+                        <option>Freelance</option>
+                        <option>Investment</option>
+                        <option>Other</option>
+
+                    </select>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label>Account</label>
+
+                    <select id="account" required></select>
+
+                </div>
+
+            </div>
+
+
+            <div class="form-group checkbox-group">
+
+                <input
+                    type="checkbox"
+                    id="recurring"
+                >
+
+                <label for="recurring">
+                    Recurring transaction
+                </label>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="secondary-btn"
+                    onclick="closeTransactionModal()"
+                >
+                    Cancel
+                </button>
+
+                <button
+                    type="submit"
+                    class="add-btn"
+                >
+                    Save Transaction
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+</html>
