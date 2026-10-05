@@ -24,7 +24,17 @@ body {
     color: var(--text);
     transition: 0.3s;
 }
+.developer-tag {
+    text-align: center;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #777;
+}
 
+.developer-tag strong {
+    color: #4f46e5;
+}
 
 /* DARK MODE */
 
